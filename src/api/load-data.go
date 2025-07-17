@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 )
 
 // Loads data from the api url
-func LoadData(nextPage ...string) ([]models.StockInformation, error) {
+func LoadData(insertFn func(*models.StockInformation) error, nextPage ...string) error {
 	apiURL := os.Getenv("API_URL")
 	token := os.Getenv("API_TOKEN")
 
@@ -19,7 +20,7 @@ func LoadData(nextPage ...string) ([]models.StockInformation, error) {
 	if len(nextPage) > 0 && nextPage[0] != "" {
 		parsedURL, err := url.Parse(apiURL)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing base URL: %w", err)
+			return fmt.Errorf("error parsing base URL: %w", err)
 		}
 		query := parsedURL.Query()
 		query.Set("next_page", nextPage[0])
@@ -30,7 +31,7 @@ func LoadData(nextPage ...string) ([]models.StockInformation, error) {
 	// Create the new request
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Add authorization header
@@ -40,30 +41,50 @@ func LoadData(nextPage ...string) ([]models.StockInformation, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
+	// Read the response
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var data models.StockInformationResponse
 	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, err
+		return err
+	}
+
+	// Insert the elements
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(data.Items))
+	for _, item := range data.Items {
+		itemCopy := item
+		wg.Add(1)
+		go func(stock models.StockInformation) {
+			defer wg.Done()
+			if err := insertFn(&stock); err != nil {
+				errChan <- fmt.Errorf("insert error %s: %w", stock.Ticker, err)
+			}
+		}(itemCopy)
+	}
+
+	wg.Wait()
+	close(errChan)
+
+	if len(errChan) > 0 {
+		for err := range errChan {
+			fmt.Println("Error:", err)
+		}
+		return fmt.Errorf("errors occurred during insertion")
 	}
 
 	// if the next page is not "", call the api with the next page
 	if data.NextPage != "" {
-		nextItems, err := LoadData(data.NextPage)
-		if err != nil {
-			return nil, err
-		}
-		// join the data
-		data.Items = append(data.Items, nextItems...)
+		return LoadData(insertFn, data.NextPage)
 	}
 
 	// return the data items
-	return data.Items, nil
+	return nil
 }
