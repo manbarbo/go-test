@@ -1,6 +1,7 @@
 package models
 
 type StockInformation struct {
+	ID         string `json:"id"`
 	Ticker     string `json:"ticker"`
 	TargetFrom string `json:"target_from"`
 	TargetTo   string `json:"target_to"`

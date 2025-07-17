@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// PrintDataAsJSON imprime cualquier struct o slice de structs como JSON formateado
+// PrintDataAsJSON: prints struct o slice de structs as formated JSON
 func PrintDataAsJSON(data interface{}) {
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
