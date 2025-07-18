@@ -12,3 +12,8 @@ type StockInformation struct {
 	RatingTo   string `json:"rating_to"`
 	Time       string `json:"time"`
 }
+
+type StockWithScore struct {
+	StockInformation
+	Score float64 `json:"score"`
+}

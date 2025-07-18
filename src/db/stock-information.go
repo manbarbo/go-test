@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"go-test/models"
+	"strings"
 )
 
 // InsertStock: Creates a stock information
@@ -42,6 +43,39 @@ func ListStocks(db *sql.DB, filters map[string]string) ([]models.StockInformatio
 	if v, ok := filters["action"]; ok && v != "" {
 		query += fmt.Sprintf(" AND action = $%d", argPos)
 		args = append(args, v)
+		argPos++
+	}
+
+	// Sort
+	if sortBy, ok := filters["sort_by"]; ok && sortBy != "" {
+		allowed := map[string]bool{
+			"ticker": true, "company": true, "brokerage": true,
+			"action": true, "time": true, "rating_from": true, "rating_to": true,
+		}
+		col := sortBy
+
+		order := "ASC"
+		if o, ok := filters["order"]; ok {
+			upper := strings.ToUpper(o)
+			if upper == "ASC" || upper == "DESC" {
+				order = upper
+			}
+		}
+
+		if allowed[col] && (order == "ASC" || order == "DESC") {
+			query += fmt.Sprintf(" ORDER BY %s %s", col, order)
+		}
+	}
+
+	// Pagination: limit y offset
+	if limit, ok := filters["limit"]; ok && limit != "" {
+		query += fmt.Sprintf(" LIMIT $%d", argPos)
+		args = append(args, limit)
+		argPos++
+	}
+	if offset, ok := filters["offset"]; ok && offset != "" {
+		query += fmt.Sprintf(" OFFSET $%d", argPos)
+		args = append(args, offset)
 		argPos++
 	}
 

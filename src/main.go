@@ -3,7 +3,10 @@ package main
 import (
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
+	"go-test/api"
 )
 
 func init() {
@@ -14,21 +17,10 @@ func init() {
 }
 
 func main() {
-	// DB, err := db.ConnectDB()
-	// if err != nil {
-	// 	log.Fatalf("Error conectando a la base de datos: %v", err)
-	// }
+	router := gin.Default()
 
-	// // Clear Stocks before insert
-	// if err := db.ClearStocks(DB); err != nil {
-	// 	log.Fatalf("Error limpiando tabla: %v", err)
-	// }
+	api.RegisterLifeCheckRoutes(router)
+	api.RegisterStockRoutes(router)
 
-	// // Load data and inster into the DB
-	// err = api.LoadData(func(stock *models.StockInformation) error {
-	// 	return db.InsertStock(DB, stock)
-	// })
-	// if err != nil {
-	// 	log.Fatalf("Error cargando e insertando datos: %v", err)
-	// }
+	router.Run(":8080")
 }
