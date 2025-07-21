@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -11,9 +12,20 @@ import (
 )
 
 func RunMigrations() {
-	connStr := os.Getenv("DB_CONN_STR_MIGRATIONS")
-	if connStr == "" {
-		log.Fatal("DB_CONN_STR is not defined in .env file")
+
+	user := os.Getenv("DB_USER")
+	pass := os.Getenv("BD_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	name := os.Getenv("DB_NAME")
+	options := os.Getenv("DB_OPTIONS")
+	connector := os.Getenv("BD_MIGRATION_CONNECTOR")
+
+	connStr := fmt.Sprintf("%s://%s:%s@%s:%s/%s?%s",
+		connector, user, pass, host, port, name, options)
+
+	if user == "" || pass == "" || host == "" || port == "" || name == "" || connector == "" {
+		log.Fatal("Missing one or more required DB environment variables:" + connStr)
 	}
 
 	m, err := migrate.New("file://migrations", connStr)

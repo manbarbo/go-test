@@ -12,12 +12,19 @@ import (
 )
 
 func ConnectDB() (*sql.DB, error) {
-	connStr := os.Getenv("DB_CONN_STR")
+	user := os.Getenv("DB_USER")
+	pass := os.Getenv("BD_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	name := os.Getenv("DB_NAME")
+	options := os.Getenv("DB_OPTIONS")
 
-	if connStr == "" {
-		err := "DB_CONN_STR is not defined in .env file"
-		log.Fatal(err)
-		return nil, errors.New(err)
+	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?%s",
+		user, pass, host, port, name, options)
+
+	if user == "" || pass == "" || host == "" || port == "" || name == "" {
+		log.Fatal("Missing one or more required DB environment variables: " + connStr)
+		return nil, errors.New("missing DB env vars")
 	}
 
 	DB, err := sql.Open("pgx", connStr)
