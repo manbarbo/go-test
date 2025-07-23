@@ -20,7 +20,7 @@ func RegisterStockRoutes(router *gin.Engine) {
 		defer conn.Close()
 
 		filters := map[string]string{}
-		for _, key := range []string{"company", "brokerage", "ticker", "action", "sort_by", "order", "limit", "offset"} {
+		for _, key := range []string{"company", "brokerage", "ticker", "rating_from", "rating_to", "action", "sort_by", "order", "limit", "offset"} {
 			if v := c.Query(key); v != "" {
 				filters[key] = v
 			}
@@ -56,5 +56,39 @@ func RegisterStockRoutes(router *gin.Engine) {
 		}
 
 		c.JSON(http.StatusOK, topStocks)
+	})
+
+	router.GET("/rating-list/from", func(c *gin.Context) {
+		conn, err := db.ConnectDB()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "database connection failed"})
+			return
+		}
+		defer conn.Close()
+
+		ratingList, err := db.RatingFromList(conn)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, ratingList)
+	})
+
+	router.GET("/rating-list/to", func(c *gin.Context) {
+		conn, err := db.ConnectDB()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "database connection failed"})
+			return
+		}
+		defer conn.Close()
+
+		ratingList, err := db.RatingToList(conn)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, ratingList)
 	})
 }

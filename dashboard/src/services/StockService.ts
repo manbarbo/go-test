@@ -26,3 +26,9 @@ export async function fetchStocks(params: StockQueryParams): Promise<StockInform
 
   return await response.json()
 }
+
+export async function fetchRatings(type: string): Promise<string[]> {
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/rating-list/${type}`)
+  if (!res.ok) throw new Error('Failed to fetch ratings')
+  return res.json()
+}

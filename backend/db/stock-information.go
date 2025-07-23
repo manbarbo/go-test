@@ -53,6 +53,20 @@ func ListStocks(db *sql.DB, filters map[string]string) ([]models.StockInformatio
 		argPos++
 	}
 
+	// Rating From Filter (exact)
+	if v, ok := filters["rating_from"]; ok && v != "" {
+		query += fmt.Sprintf(" AND rating_from = $%d", argPos)
+		args = append(args, v)
+		argPos++
+	}
+
+	// Rating To Filter (exact)
+	if v, ok := filters["rating_to"]; ok && v != "" {
+		query += fmt.Sprintf(" AND rating_to = $%d", argPos)
+		args = append(args, v)
+		argPos++
+	}
+
 	// Sort
 	if sortBy, ok := filters["sort_by"]; ok && sortBy != "" {
 		allowed := map[string]bool{
@@ -156,4 +170,50 @@ func DeleteStock(db *sql.DB, id string) error {
 func ClearStocks(db *sql.DB) error {
 	_, err := db.Exec("DELETE FROM stock_information")
 	return err
+}
+
+func RatingFromList(db *sql.DB) ([]string, error) {
+	rows, err := db.Query("SELECT DISTINCT rating_from FROM stock_information ORDER BY rating_from")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ratings []string
+	for rows.Next() {
+		var rating string
+		if err := rows.Scan(&rating); err != nil {
+			return nil, err
+		}
+		ratings = append(ratings, rating)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ratings, nil
+}
+
+func RatingToList(db *sql.DB) ([]string, error) {
+	rows, err := db.Query("SELECT DISTINCT rating_to FROM stock_information ORDER BY rating_to")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ratings []string
+	for rows.Next() {
+		var rating string
+		if err := rows.Scan(&rating); err != nil {
+			return nil, err
+		}
+		ratings = append(ratings, rating)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ratings, nil
 }

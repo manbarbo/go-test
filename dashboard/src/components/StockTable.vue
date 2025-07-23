@@ -2,9 +2,25 @@
   <div class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-2 glass p-1 w-full">
       <div class="flex flex-wrap gap-2">
-        <input v-model="filters.ticker" placeholder="Ticker" class="input glass p-1" />
-        <input v-model="filters.company" placeholder="Company" class="input glass p-1" />
-        <input v-model="filters.brokerage" placeholder="Brokerage" class="input glass p-1" />
+        <input v-model="filters.ticker" placeholder="Ticker" class="input glass px-2" />
+        <input v-model="filters.company" placeholder="Company" class="input glass px-2" />
+        <input v-model="filters.brokerage" placeholder="Brokerage" class="input glass px-2" />
+        <Select
+          v-model="filters.rating_from"
+          :options="ratings_from"
+          placeholder="Rating From"
+          class="input glass w-50 text-left"
+          overlayClass="glass"
+          showClear
+        />
+        <Select
+          v-model="filters.rating_to"
+          :options="ratings_to"
+          placeholder="Rating To"
+          class="input glass w-50 text-left"
+          overlayClass="glass"
+          showClear
+        />
       </div>
       <div>
         <button @click="loadStocks" class="btn">Apply Filters</button>
@@ -46,11 +62,14 @@
 <script setup lang="ts">
   import { ref, reactive, onMounted } from 'vue'
   import DataTable from 'primevue/datatable'
+  import Select from 'primevue/select'
   import Column from 'primevue/column'
-  import { fetchStocks } from '../services/stockService'
+  import { fetchStocks, fetchRatings } from '../services/stockService'
   import type { StockInformation } from '../model/StockInformation'
 
   const stocks = ref<StockInformation[]>([])
+  const ratings_from = ref<string[]>([])
+  const ratings_to = ref<string[]>([])
   const totalRecords = ref(0)
   const loading = ref(false)
   const offset = ref(0)
@@ -108,7 +127,17 @@
       second: '2-digit'
     }).replace(',', '')
   }
-  onMounted(loadStocks)
+
+  onMounted(async () => {
+    try {
+      ratings_from.value = await fetchRatings('from')
+      ratings_to.value = await fetchRatings('to')
+    } catch (err) {
+      console.error('Failed to load ratings', err)
+    }
+
+    await loadStocks()
+  })
 </script>
 
 <style scoped>
