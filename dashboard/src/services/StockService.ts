@@ -1,4 +1,4 @@
-import type { StockWithScore, StockInformation } from '../models/StockInformation'
+import type { StockWithScore, StockInformation, StockQueryParams } from '../models/StockInformation'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -10,10 +10,19 @@ export async function fetchTopRecommendations(top = 5): Promise<StockWithScore[]
   return await response.json()
 }
 
-export async function fetchStocks(): Promise<StockInformation[]> {
-  const res = await fetch(`${API_URL}/stocks`)
-  if (!res.ok) {
-    throw new Error('Failed to fetch stocks')
+export async function fetchStocks(params: StockQueryParams): Promise<StockInformation[]> {
+  const url = new URL(`${import.meta.env.VITE_API_BASE_URL}/stocks`)
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== '') {
+      url.searchParams.append(key, value.toString())
+    }
+  })
+
+  const response = await fetch(url.toString())
+  if (!response.ok) {
+    throw new Error('Error fetching stocks')
   }
-  return res.json()
+
+  return await response.json()
 }

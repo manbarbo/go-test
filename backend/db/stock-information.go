@@ -25,21 +25,28 @@ func ListStocks(db *sql.DB, filters map[string]string) ([]models.StockInformatio
 	args := []interface{}{}
 	argPos := 1
 
-	// Filtro por Company (contiene)
+	// Company Filter (includes)
 	if v, ok := filters["company"]; ok && v != "" {
 		query += fmt.Sprintf(" AND company ILIKE $%d", argPos)
 		args = append(args, "%"+v+"%")
 		argPos++
 	}
 
-	// Filtro por Brokerage (contiene)
+	// Brokerage Filter (includes)
 	if v, ok := filters["brokerage"]; ok && v != "" {
 		query += fmt.Sprintf(" AND brokerage ILIKE $%d", argPos)
 		args = append(args, "%"+v+"%")
 		argPos++
 	}
 
-	// Filtro por Action (exacto)
+	// Ticker Filter (includes)
+	if v, ok := filters["ticker"]; ok && v != "" {
+		query += fmt.Sprintf(" AND ticker ILIKE $%d", argPos)
+		args = append(args, "%"+v+"%")
+		argPos++
+	}
+
+	// Action Filter (exact)
 	if v, ok := filters["action"]; ok && v != "" {
 		query += fmt.Sprintf(" AND action = $%d", argPos)
 		args = append(args, v)
@@ -78,6 +85,8 @@ func ListStocks(db *sql.DB, filters map[string]string) ([]models.StockInformatio
 		args = append(args, offset)
 		argPos++
 	}
+
+	fmt.Println(query)
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
