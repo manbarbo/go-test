@@ -14,6 +14,6 @@ type StockInformation struct {
 }
 
 type StockWithScore struct {
-	StockInformation
-	Score float64 `json:"score"`
+	StockInformation `json:"stock_information"`
+	Score            float64 `json:"score"`
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"go-test/api"
+	"go-test/middlewares"
 )
 
 func init() {
@@ -18,6 +19,9 @@ func init() {
 
 func main() {
 	router := gin.Default()
+
+	corsMiddleware, _ := middlewares.CORSMiddleware()
+	router.Use(corsMiddleware)
 
 	api.RegisterLifeCheckRoutes(router)
 	api.RegisterStockRoutes(router)
