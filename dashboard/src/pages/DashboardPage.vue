@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col min-h-full min-w-full p-6 gap-6 text-white">
+  <div class="flex flex-col min-h-full min-w-full p-3 gap-6 text-white">
     <div class="h-1/3 glass rounded-xl shadow p-4">
       <TopRecommendations />
     </div>
