@@ -26,6 +26,7 @@
 import { ref, onMounted } from 'vue'
 import RecommendationCard from './RecommendationCard.vue'
 import type { StockWithScore } from '../models/StockInformation'
+import { fetchTopRecommendations } from '../services/StockService'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const recommendations = ref<StockWithScore[]>([])
@@ -34,9 +35,7 @@ const error = ref(false)
 
 onMounted(async () => {
   try {
-    const res = await fetch(`${API_BASE_URL}/recommendation?top=5`)
-    recommendations.value = await res.json()
-    console.log(recommendations)
+    recommendations.value = await fetchTopRecommendations()
   } catch (err) {
     console.error(err)
     error.value = true
